@@ -1,28 +1,48 @@
 package controllers
 
+import (
+	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
+)
+
 type Application struct {
+	ProductCollection *mongo.Collection
+	UserCollection    *mongo.Collection
 }
 
-func NewApplication() {
-
+func (app *Application) NewApplication() *Application {
+	return &Application{
+		ProductCollection: ProductCollection,
+		UserCollection:    UserCollection,
+	}
 }
 
-func CreatingСard() {
+func (app *Application) CreatingСard() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
 
+	}
 }
 
-func DeleteCard() {
+func (app *Application) DeleteCard() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
 
+	}
 }
 
-func GetProductFromCart() {
+func GetProductFromCart() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
 
+	}
 }
 
-func BuyProductFromCart() {
+func (app *Application) BuyProductFromCart() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
 
+	}
 }
 
-func FastBuy() {
+func (app *Application) FastBuy() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
 
+	}
 }

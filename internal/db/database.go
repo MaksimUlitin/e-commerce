@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func DbSet() *mongo.Client {
+func DbCon() *mongo.Client {
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://development:testpassword@localhost:27017"))
 	if err != nil {
 		log.Fatal()
@@ -36,10 +36,16 @@ func DbSet() *mongo.Client {
 	return client
 }
 
-var Client *mongo.Client = DbSet()
+var Client *mongo.Client = DbCon()
 
-func SignupDb(Client *mongo.Client, colName string) *mongo.Collection {
-	var collectiondb *mongo.Collection = Client.Database("Ecommerce").Collection(colName)
+func SignupDb(client *mongo.Client, colName string) *mongo.Collection {
+	var collectiondb *mongo.Collection = client.Database("Ecommerce").Collection(colName)
 
 	return collectiondb
+}
+
+func AbuotProduct(client *mongo.Client, cloName string) *mongo.Collection {
+	var productCollection *mongo.Collection = client.Database("Ecommerce").Collection(cloName)
+
+	return productCollection
 }

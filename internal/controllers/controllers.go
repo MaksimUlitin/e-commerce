@@ -12,12 +12,33 @@ import (
 	"github.com/maksimulitin/pkg/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var (
-	Validate                         = validator.New(validator.WithRequiredStructEnabled())
-	UserCollection *mongo.Collection = db.SignupDb(db.Client, "Users")
+	Validate                            = validator.New(validator.WithRequiredStructEnabled())
+	UserCollection    *mongo.Collection = db.AbuotUser(db.Client, "Users")
+	ProductCollection *mongo.Collection = db.AbuotProduct(db.Client, "Products")
 )
+
+func HashPassword(password string) string {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	if err != nil {
+		log.Panic(err)
+	}
+	return string(bytes)
+}
+
+func VerifyPassword(enterPassword string, givenPassword string) (bool, string) {
+	err := bcrypt.CompareHashAndPassword([]byte(enterPassword), []byte(givenPassword))
+	verify := true
+	message := ""
+	if err != nil {
+		message = "Login or Password invalid"
+		verify = false
+	}
+	return verify, message
+}
 
 func Signup() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
