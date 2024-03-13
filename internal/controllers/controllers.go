@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -88,6 +89,31 @@ func Signup() gin.HandlerFunc {
 
 func Login() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		var (
+			user      models.User
+			findUser  models.User
+			c, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		)
+		defer cancel()
+
+		if err := ctx.BindJSON(&user); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err})
+			return
+		}
+
+		err := UserCollection.FindOne(c, bson.M{"email": user.Email}).Decode(&findUser)
+		defer cancel()
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "login or password error"})
+			return
+		}
+
+		passwordValet, msg := VerifyPassword(*user.Password, *findUser.Password)
+		if !passwordValet {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": msg})
+			fmt.Println(msg)
+			return
+		}
 
 	}
 
@@ -95,7 +121,7 @@ func Login() gin.HandlerFunc {
 
 func AddProduct() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-
+		var ()
 	}
 
 }
