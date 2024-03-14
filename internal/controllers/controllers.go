@@ -12,6 +12,7 @@ import (
 	"github.com/maksimulitin/internal/db"
 	"github.com/maksimulitin/pkg/models"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -119,9 +120,29 @@ func Login() gin.HandlerFunc {
 
 }
 
-func AddProduct() gin.HandlerFunc {
+func AdminProduct() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var ()
+		var (
+			product   models.Porduct
+			c, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		)
+		defer cancel()
+
+		if err := ctx.BindJSON(&product); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		product.ProductID = primitive.NewObjectID()
+		_, anyErr := ProductCollection.InsertOne(c, &product)
+
+		if anyErr != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "not created"})
+			return
+		}
+		defer cancel()
+
+		ctx.JSON(http.StatusOK, "successfully added our product admin!")
 	}
 
 }

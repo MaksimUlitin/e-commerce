@@ -38,7 +38,7 @@ func DbCon() *mongo.Client {
 
 var Client *mongo.Client = DbCon()
 
-func SignupDb(client *mongo.Client, colName string) *mongo.Collection {
+func AbuotUser(client *mongo.Client, colName string) *mongo.Collection {
 	var collectiondb *mongo.Collection = client.Database("Ecommerce").Collection(colName)
 
 	return collectiondb
