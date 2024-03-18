@@ -184,18 +184,36 @@ func ViewProduct() gin.HandlerFunc {
 func SerchProduct() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var (
-			product   []models.Porduct
-			c, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+			productsSerch []models.Porduct
+			c, cancel     = context.WithTimeout(context.Background(), 100*time.Second)
 		)
 		queryParam := ctx.Query("name")
 
 		if queryParam == "" {
 			fmt.Println("конч напиши чтото пжпж")
 			ctx.Header("Content-Type", "Aplication/json")
-			ctx.JSON(http.StatusNotFound, gin.H{"": ""})
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "invalid serch index"})
 		}
 		defer cancel()
-
+		serchBD, err := ProductCollection.Find(c, bson.M{"productName": bson.M{"$regex": queryParam}})
+		if err != nil {
+			ctx.IndentedJSON(http.StatusBadRequest, "something went wrong in fetching the dbquery")
+			return
+		}
+		err = serchBD.All(c, &productsSerch)
+		if err != nil {
+			log.Println(err)
+			ctx.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		defer serchBD.Close(c)
+		if err := serchBD.Err(); err != nil {
+			log.Println(err)
+			ctx.IndentedJSON(http.StatusBadRequest, "invalid request")
+			return
+		}
+		defer cancel()
+		ctx.IndentedJSON(http.StatusOK, serchBD)
 	}
 
 }
