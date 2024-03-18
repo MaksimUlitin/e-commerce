@@ -149,13 +149,52 @@ func AdminProduct() gin.HandlerFunc {
 
 func ViewProduct() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		var (
+			productList models.Porduct
+			c, cancel   = context.WithTimeout(context.Background(), 100*time.Second)
+		)
+		defer cancel()
+		cursor, err := ProductCollection.Find(c, bson.D{})
 
+		if err != nil {
+			ctx.IndentedJSON(http.StatusInternalServerError, err)
+			return
+		}
+
+		err = cursor.All(c, &productList)
+		if err != nil {
+			fmt.Println(err)
+			ctx.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		defer cursor.Close(c)
+
+		if err := cursor.Err(); err != nil {
+			fmt.Println(err)
+			ctx.IndentedJSON(http.StatusBadRequest, "invalid")
+			return
+		}
+		defer cancel()
+		ctx.IndentedJSON(200, productList)
 	}
 
 }
 
 func SerchProduct() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		var (
+			product   []models.Porduct
+			c, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		)
+		queryParam := ctx.Query("name")
+
+		if queryParam == "" {
+			fmt.Println("конч напиши чтото пжпж")
+			ctx.Header("Content-Type", "Aplication/json")
+			ctx.JSON(http.StatusNotFound, gin.H{"": ""})
+		}
+		defer cancel()
 
 	}
 
