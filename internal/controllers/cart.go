@@ -10,7 +10,7 @@ type Application struct {
 	UserCollection    *mongo.Collection
 }
 
-func (app *Application) NewApplication() *Application {
+func NewApplication(CollectionProduct, CollectionUser *mongo.Collection) *Application {
 	return &Application{
 		ProductCollection: ProductCollection,
 		UserCollection:    UserCollection,
