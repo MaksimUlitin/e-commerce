@@ -163,7 +163,7 @@ func ViewProduct() gin.HandlerFunc {
 
 		err = cursor.All(c, &productList)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			ctx.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
@@ -171,7 +171,7 @@ func ViewProduct() gin.HandlerFunc {
 		defer cursor.Close(c)
 
 		if err := cursor.Err(); err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			ctx.IndentedJSON(http.StatusBadRequest, "invalid")
 			return
 		}
@@ -190,7 +190,7 @@ func SerchProduct() gin.HandlerFunc {
 		queryParam := ctx.Query("name")
 
 		if queryParam == "" {
-			fmt.Println("конч напиши чтото пжпж")
+			log.Println("конч напиши чтото пжпж")
 			ctx.Header("Content-Type", "Aplication/json")
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "invalid serch index"})
 		}

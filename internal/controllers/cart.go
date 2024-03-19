@@ -17,13 +17,13 @@ func NewApplication(CollectionProduct, CollectionUser *mongo.Collection) *Applic
 	}
 }
 
-func (app *Application) CreatingСard() gin.HandlerFunc {
+func (app *Application) CreatingСart() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 	}
 }
 
-func (app *Application) DeleteCard() gin.HandlerFunc {
+func (app *Application) DeleteCart() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 	}
