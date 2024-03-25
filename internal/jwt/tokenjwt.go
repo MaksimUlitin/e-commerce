@@ -1,6 +1,12 @@
 package jwt
 
-import "github.com/golang-jwt/jwt" // "github.com/dgrijalva/jwt-go"
+import (
+	"os"
+
+	"github.com/golang-jwt/jwt" // "github.com/dgrijalva/jwt-go"
+	"github.com/maksimulitin/internal/db"
+	"go.mongodb.org/mongo-driver/mongo"
+)
 
 type FFDetails struct {
 	Email     string
@@ -10,9 +16,12 @@ type FFDetails struct {
 	jwt.StandardClaims
 }
 
-var ()
+var (
+	AbuotUser  *mongo.Collection = db.AbuotUser(db.Client, "user")
+	SEKRET_KEY                   = os.Getenv("SEKRET_KEY")
+)
 
-func GenerateToken() {
+func GenerateToken(email string, firstname string, lastname string, uid string) {
 
 }
 
