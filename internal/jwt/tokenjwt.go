@@ -1,13 +1,17 @@
 package jwt
 
 import (
+	"context"
 	"log"
 	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt" // "github.com/dgrijalva/jwt-go"
 	"github.com/maksimulitin/internal/db"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type SingupDetails struct {
@@ -75,6 +79,25 @@ func ValidateToken(signedtoken string) (claims *SingupDetails, msg string) {
 
 }
 
-func UpdateToken() {
-
+func UpdateToken(signedtoken string, signedrefreshtoken string, userid string) {
+	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+	var updateobj primitive.D
+	updateobj = append(updateobj, bson.E{Key: "token", Value: signedtoken})
+	updateobj = append(updateobj, bson.E{Key: "refresh_token", Value: signedrefreshtoken})
+	updated_at, _ := time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+	updateobj = append(updateobj, bson.E{Key: "updatedat", Value: updated_at})
+	upsert := true
+	filter := bson.M{"user_id": userid}
+	opt := options.UpdateOptions{
+		Upsert: &upsert,
+	}
+	_, err := AbuotUser.UpdateOne(ctx, filter, bson.D{
+		{Key: "$set", Value: updateobj},
+	},
+		&opt)
+	defer cancel()
+	if err != nil {
+		log.Panic(err)
+		return
+	}
 }
