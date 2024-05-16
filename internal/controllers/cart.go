@@ -84,7 +84,7 @@ func (app *Application) DeleteCart() gin.HandlerFunc {
 
 		var c, cancel = context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		err = db.RemoveCart(ctx, app.ProductCollection, app.UserCollection, ProductID, userQueryID)
+		err = db.RemoveCart(c, app.ProductCollection, app.UserCollection, ProductID, userQueryID)
 		if err != nil {
 			ctx.IndentedJSON(http.StatusInternalServerError, err)
 			return
@@ -95,7 +95,7 @@ func (app *Application) DeleteCart() gin.HandlerFunc {
 
 func GetProductFromCart() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-
+		
 	}
 }
 
