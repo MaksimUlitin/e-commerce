@@ -13,8 +13,8 @@ import (
 /*
 TODO
  1. ADD SWAGGER
- 2 CHANGE LOGIC
- 3 REWRITE README
+    2 CHANGE LOGIC
+    3 REWRITE README
  4. ADD LOGGER
 */
 func main() {
