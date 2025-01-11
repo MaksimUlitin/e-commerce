@@ -1,37 +1,34 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/maksimulitin/internal/controllers"
 	"github.com/maksimulitin/internal/database"
-	"github.com/maksimulitin/internal/middleware"
 	"github.com/maksimulitin/internal/routes"
+	"github.com/maksimulitin/lib/logger"
 	"log"
-
-	"github.com/gin-gonic/gin"
+	"log/slog"
 )
 
-/*
-TODO
- 1. ADD SWAGGER
-    2 CHANGE LOGIC
-    3 REWRITE README
- 4. ADD LOGGER
-*/
 func main() {
-	app := controllers.NewApplication(database.ProductData(database.Client, "Products"), database.UserData(database.Client, "Users"))
+	logger.Info("Starting application initialization")
+
+	app := controllers.NewApplication(
+		database.ProductData(database.Client, "Products"),
+		database.UserData(database.Client, "Users"),
+	)
+
+	logger.Info("Application controllers initialized successfully")
 
 	router := gin.New()
 	router.Use(gin.Logger())
-	routes.UserRoutes(router)
-	router.Use(middleware.Authentication())
-	router.GET("/addtocart", app.AddToCart())
-	router.GET("/removeitem", app.RemoveItem())
-	router.GET("/listcart", controllers.GetItemFromCart())
-	router.POST("/addaddress", controllers.AddAddress())
-	router.PUT("/edithomeaddress", controllers.EditHomeAddress())
-	router.PUT("/editworkaddress", controllers.EditWorkAddress())
-	router.GET("/deleteaddresses", controllers.DeleteAddress())
-	router.GET("/cartcheckout", app.BuyFromCart())
-	router.GET("/instantbuy", app.InstantBuy())
-	log.Fatal(router.Run(":" + "8084"))
+	routes.SetupRoutes(router, app)
+
+	logger.Info("Router configured successfully", slog.String("port", "8084"), slog.Any("routes", router.Routes()))
+	logger.Info("Starting server on port 8084")
+
+	if err := router.Run(":8084"); err != nil {
+		logger.Error("Server failed to start", slog.Any("error", err))
+		log.Fatal(err)
+	}
 }

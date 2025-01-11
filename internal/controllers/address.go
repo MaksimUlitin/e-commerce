@@ -18,6 +18,7 @@ import (
 func AddAddress() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.Query("id")
+
 		if userID == "" {
 			logger.Error("User ID is empty")
 			c.Header("Content-Type", "application/json")
@@ -27,6 +28,7 @@ func AddAddress() gin.HandlerFunc {
 		}
 
 		address, err := primitive.ObjectIDFromHex(userID)
+
 		if err != nil {
 			logger.Error("Invalid user ID format", slog.Any("error", err))
 			c.IndentedJSON(http.StatusInternalServerError, "Internal Server Error")
@@ -35,6 +37,7 @@ func AddAddress() gin.HandlerFunc {
 
 		var addresses models.Address
 		addresses.AddressId = primitive.NewObjectID()
+
 		if err := c.BindJSON(&addresses); err != nil {
 			logger.Error("Failed to bind JSON to address struct", slog.Any("error", err))
 			c.IndentedJSON(http.StatusNotAcceptable, err.Error())
@@ -44,11 +47,26 @@ func AddAddress() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 
-		matchFilter := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: address}}}}
-		unwind := bson.D{{Key: "$unwind", Value: bson.D{{Key: "path", Value: "$address"}}}}
-		group := bson.D{{Key: "$group", Value: bson.D{{Key: "_id", Value: "$address_id"}, {Key: "count", Value: bson.D{{Key: "$sum", Value: 1}}}}}}
+		matchFilter := bson.D{{Key: "$match",
+			Value: bson.D{{Key: "_id",
+				Value: address,
+			}}}}
+
+		unwind := bson.D{{Key: "$unwind",
+			Value: bson.D{{Key: "path",
+				Value: "$address",
+			}}}}
+
+		group := bson.D{{Key: "$group",
+			Value: bson.D{{Key: "_id",
+				Value: "$address_id"},
+				{Key: "count",
+					Value: bson.D{{Key: "$sum",
+						Value: 1,
+					}}}}}}
 
 		pointCursor, err := UserCollection.Aggregate(ctx, mongo.Pipeline{matchFilter, unwind, group})
+
 		if err != nil {
 			logger.Error("Failed to aggregate address data", slog.Any("error", err))
 			c.IndentedJSON(http.StatusInternalServerError, "Internal Server Error")
@@ -56,6 +74,7 @@ func AddAddress() gin.HandlerFunc {
 		}
 
 		var addressInfo []bson.M
+
 		if err = pointCursor.All(ctx, &addressInfo); err != nil {
 			logger.Error("Failed to decode aggregation results", slog.Any("error", err))
 			c.IndentedJSON(http.StatusInternalServerError, "Internal Server Error")
@@ -69,16 +88,26 @@ func AddAddress() gin.HandlerFunc {
 		}
 
 		if size < 2 {
-			filter := bson.D{{Key: "_id", Value: address}}
-			update := bson.D{{Key: "$push", Value: bson.D{{Key: "address", Value: addresses}}}}
+			filter := bson.D{{Key: "_id",
+				Value: address,
+			}}
+
+			update := bson.D{{Key: "$push",
+				Value: bson.D{{Key: "address",
+					Value: addresses,
+				}}}}
+
 			_, err := UserCollection.UpdateOne(ctx, filter, update)
+
 			if err != nil {
 				logger.Error("Failed to update user address", slog.Any("error", err))
 				c.IndentedJSON(http.StatusInternalServerError, "Internal Server Error")
 				return
 			}
+
 			logger.Info("Address added successfully", slog.String("userID", userID))
 			c.IndentedJSON(http.StatusCreated, "Address added successfully")
+
 		} else {
 			logger.Warn("Address limit exceeded for user", slog.String("userID", userID))
 			c.IndentedJSON(http.StatusBadRequest, "Address limit exceeded")
@@ -89,6 +118,7 @@ func AddAddress() gin.HandlerFunc {
 func EditHomeAddress() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.Query("id")
+
 		if userID == "" {
 			logger.Error("User ID is empty")
 			c.JSON(http.StatusNotFound, gin.H{"error": "Invalid ID"})
@@ -97,6 +127,7 @@ func EditHomeAddress() gin.HandlerFunc {
 		}
 
 		userObjID, err := primitive.ObjectIDFromHex(userID)
+
 		if err != nil {
 			logger.Error("Invalid user ID format", slog.Any("error", err))
 			c.IndentedJSON(http.StatusInternalServerError, "Internal Server Error")
@@ -104,6 +135,7 @@ func EditHomeAddress() gin.HandlerFunc {
 		}
 
 		var editAddress models.Address
+
 		if err := c.BindJSON(&editAddress); err != nil {
 			logger.Error("Failed to bind JSON to address struct", slog.Any("error", err))
 			c.IndentedJSON(http.StatusBadRequest, err.Error())
@@ -122,6 +154,7 @@ func EditHomeAddress() gin.HandlerFunc {
 		}}}
 
 		_, err = UserCollection.UpdateOne(ctx, filter, update)
+
 		if err != nil {
 			logger.Error("Failed to update home address", slog.Any("error", err))
 			c.IndentedJSON(http.StatusInternalServerError, "Something went wrong")
@@ -136,8 +169,8 @@ func EditHomeAddress() gin.HandlerFunc {
 func EditWorkAddress() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		logger.Info("EditWorkAddress handler invoked")
-
 		userId := c.Query("id")
+
 		if userId == "" {
 			logger.Error("User ID not provided")
 			c.Header("Content-Type", "application/json")
@@ -145,7 +178,9 @@ func EditWorkAddress() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
 		usertId, err := primitive.ObjectIDFromHex(userId)
+
 		if err != nil {
 			logger.Error("Invalid User ID", slog.Any("error", err))
 			c.IndentedJSON(500, err)
@@ -153,6 +188,7 @@ func EditWorkAddress() gin.HandlerFunc {
 		}
 
 		var editAddress models.Address
+
 		if err := c.BindJSON(&editAddress); err != nil {
 			logger.Error("Failed to bind JSON", slog.Any("error", err))
 			c.IndentedJSON(http.StatusBadRequest, err.Error())
@@ -171,11 +207,13 @@ func EditWorkAddress() gin.HandlerFunc {
 		}}}
 
 		_, err = UserCollection.UpdateOne(ctx, filter, update)
+
 		if err != nil {
 			logger.Error("Failed to update work address", slog.Any("error", err))
 			c.IndentedJSON(500, "Something went wrong")
 			return
 		}
+
 		logger.Info("Successfully updated the work address", slog.String("userID", userId))
 		c.IndentedJSON(200, "Successfully updated the Work Address")
 	}
@@ -186,6 +224,7 @@ func DeleteAddress() gin.HandlerFunc {
 		logger.Info("DeleteAddress handler invoked")
 
 		userId := c.Query("id")
+
 		if userId == "" {
 			logger.Error("Invalid Search Index", slog.Any("error", errors.New("Invalid ID")))
 			c.Header("Content-Type", "application/json")
@@ -196,6 +235,7 @@ func DeleteAddress() gin.HandlerFunc {
 
 		addresses := make([]models.Address, 0)
 		usertId, err := primitive.ObjectIDFromHex(userId)
+
 		if err != nil {
 			logger.Error("Invalid User ID", slog.Any("error", err))
 			c.IndentedJSON(500, "Internal Server Error")
@@ -208,11 +248,13 @@ func DeleteAddress() gin.HandlerFunc {
 		filter := bson.D{primitive.E{Key: "_id", Value: usertId}}
 		update := bson.D{{Key: "$set", Value: bson.D{primitive.E{Key: "address", Value: addresses}}}}
 		_, err = UserCollection.UpdateOne(ctx, filter, update)
+
 		if err != nil {
 			logger.Error("Failed to delete address", slog.Any("error", err))
 			c.IndentedJSON(404, "Wrong")
 			return
 		}
+
 		logger.Info("Successfully deleted address", slog.String("userID", userId))
 		c.IndentedJSON(200, "Successfully Deleted!")
 	}

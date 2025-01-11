@@ -15,10 +15,6 @@ func Error(msg string, args ...interface{}) {
 	Logger.Error(msg, args...)
 }
 
-func Debug(msg string, args ...interface{}) {
-	Logger.Debug(msg, args...)
-}
-
 func Warn(msg string, args ...interface{}) {
 	Logger.Warn(msg, args...)
 }
