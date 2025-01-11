@@ -10,6 +10,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+/*
+TODO
+ 1. ADD SWAGGER
+ 2 CHANGE LOGIC
+ 3 REWRITE README
+ 4. ADD LOGGER
+*/
 func main() {
 	app := controllers.NewApplication(database.ProductData(database.Client, "Products"), database.UserData(database.Client, "Users"))
 
