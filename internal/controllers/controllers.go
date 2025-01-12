@@ -97,24 +97,19 @@ func SignUp() gin.HandlerFunc {
 			return
 		}
 
-		// Хешируем пароль пользователя
 		hashedPassword := HashPassword(*user.Password)
 		user.Password = &hashedPassword
 
-		// Генерируем токены
 		token, refreshToken, _ := generate.TokenGenerator(*user.Email, *user.FirstName, *user.LastName, user.UserID)
 		user.Token = &token
 		user.RefreshToken = &refreshToken
 
-		// Устанавливаем метки времени
 		user.CreatedAt, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 		user.UpdatedAt, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 
-		// Генерируем идентификатор пользователя
 		user.ID = primitive.NewObjectID()
 		user.UserID = user.ID.Hex()
 
-		// Инициализируем пустые списки
 		user.UserCart = make([]models.ProductUser, 0)
 		user.AddressDetails = make([]models.Address, 0)
 		user.OrderStatus = make([]models.Order, 0)

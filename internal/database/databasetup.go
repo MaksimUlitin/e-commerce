@@ -3,17 +3,32 @@ package database
 import (
 	"context"
 	"errors"
+	"fmt"
+	"github.com/maksimulitin/config"
 	"github.com/maksimulitin/lib/logger"
 	"log"
 	"log/slog"
+	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// MONGO_URI=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}?retryWrites=true&w=majority
+// "mongodb://development:testpassword@localhost:27017"
 func DBSet() *mongo.Client {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://development:testpassword@localhost:27017"))
+	config.LoadConfigEnv()
+
+	mongoUser := os.Getenv("MONGO_USER")
+	mongoPassword := os.Getenv("MONGO_PASSWORD")
+	mongoHost := os.Getenv("MONGO_HOST")
+	mongoPort := os.Getenv("MONGO_PORT")
+
+	mongoURI := fmt.Sprintf("mongodb://%s:%s@%s:%s",
+		mongoUser, mongoPassword, mongoHost, mongoPort)
+
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
 
 	if err != nil {
 		logger.Error("failed to create mongo client", slog.Any("error", err))
